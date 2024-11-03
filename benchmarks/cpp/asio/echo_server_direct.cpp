@@ -9,7 +9,9 @@
 //
 
 #include <cstdio>
+#include <iostream>
 #include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_CO_AWAIT)
 
 namespace net = boost::asio;
 namespace this_coro = net::this_coro;
@@ -31,7 +33,7 @@ awaitable_type echo(tcp_socket socket)
         std::size_t n = co_await socket.async_read_some(net::buffer(data), use_awaitable);
         co_await async_write(socket, net::buffer(data, n), use_awaitable);
      }
-  } catch (std::exception const& e) {
+  } catch (std::exception const&) {
      //std::printf("echo Exception: %s\n", e.what());
   }
 }
@@ -56,3 +58,6 @@ int main()
      std::printf("Exception: %s\n", e.what());
   }
 }
+#else // defined(BOOST_ASIO_HAS_CO_AWAIT)
+auto main() -> int {std::cout << "Requires coroutine support." << std::endl; return 1;}
+#endif // defined(BOOST_ASIO_HAS_CO_AWAIT)

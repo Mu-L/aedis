@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_CO_AWAIT)
 
 namespace net = boost::asio;
 
@@ -13,8 +14,7 @@ using net::ip::tcp;
 using tcp_socket = net::use_awaitable_t<>::as_default_on_t<net::ip::tcp::socket>;
 using timer_type = net::use_awaitable_t<>::as_default_on_t<net::steady_timer>;
 
-net::awaitable<void>
-example(boost::asio::ip::tcp::endpoint ep, std::string msg, int n)
+auto example(boost::asio::ip::tcp::endpoint ep, std::string msg, int n) -> net::awaitable<void>
 {
    try {
       auto ex = co_await net::this_coro::executor;
@@ -62,3 +62,6 @@ int main(int argc, char* argv[])
       std::cerr << e.what() << std::endl;
    }
 }
+#else // defined(BOOST_ASIO_HAS_CO_AWAIT)
+auto main() -> int {std::cout << "Requires coroutine support." << std::endl; return 1;}
+#endif // defined(BOOST_ASIO_HAS_CO_AWAIT)
